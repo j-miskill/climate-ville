@@ -9,7 +9,6 @@ import math
 class ClimateAgent():
 
     def __init__(self):
-        self.base_noaa_url = "https://www.ncei.noaa.gov/access/services/search/v1/"
         self.noaa_token = os.getenv("NCDC_TOKEN")
 
     def get_lat_long(self, location: str): 
@@ -41,12 +40,12 @@ class ClimateAgent():
         latitude_offset = buffer / mile_offset # ChatGPT
         longitude_offset = buffer / (mile_offset * math.cos(math.radians(latitude))) # ChatGPT calc
         
-        north = round((latitude + latitude_offset), 6)
-        south = round((latitude - latitude_offset), 6)
-        east = round((longitude + longitude_offset), 6)
-        west = round((longitude - longitude_offset), 6)
+        north = round((latitude + latitude_offset), 3)
+        south = round((latitude - latitude_offset), 3)
+        east = round((longitude + longitude_offset), 3)
+        west = round((longitude - longitude_offset), 3)
 
-        bounding_box = (north, east, south, west)
+        bounding_box = (north, west, south, east)
         return bounding_box
          
 
@@ -63,4 +62,47 @@ class ClimateAgent():
             'From': email
         }
         return headers
+    
+    def get_station_id(self, city:str):
+        """
+            Let's figure out how to grab a station ID from this dataset
+        """
+        base = "https://www.ncei.noaa.gov/access/services/search/v1/data"
+        lat, long = self.get_lat_long(city)
+        bb = self.get_bounding_box(lat, long, buffer=10)
+        headers = self.make_headers()
+        bounding_box = f"{bb[0]},{bb[1]},{bb[2]},{bb[3]}"
+        params = {"dataset":"global-summary-of-the-month",
+                  "bbox": bounding_box,
+                  "dataTypes": "TMIN,TMAX,PRCP",
+                  "startDate": "2022-01-01",
+                  "endDate": "2022-02-01"}
+        
+        r = requests.get(base, params=params, headers=headers)
+        list_of_stations = json.loads(r.text)['results']
+        name_of_station = list_of_stations[0]['stations'][0]['name']
+        station_id = list_of_stations[0]['stations'][0]['id']
+
+        return station_id
+    
+
+    def get_data_for_station_id(self, station_id, start_date, end_date):
+        """
+            purpose: grab data from the ncei datasets to populate the database 
+        """
+        base = "https://www.ncei.noaa.gov/access/services/data/v1"
+        headers = self.make_headers()
+        params = {"dataset":"daily-summaries",
+          "dataTypes": "TMIN,TMAX,PRCP", 
+          "startDate": start_date,
+          "endDate": end_date,
+          "stations": station_id}
+        r = requests.get(base, params=params, headers=headers)
+        return r.text
+
+
+
+
+        
+        
     
