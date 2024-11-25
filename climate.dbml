@@ -1,0 +1,34 @@
+Project contrans {
+  database_type: 'PostgreSQL'
+  Note: '''
+    # Climate Changes Over Time
+  '''
+}
+
+Table cityData as CD {
+    cityid varchar [pk]
+    lat varchar
+    long varchar
+    bounding_box varchar
+  }
+Table climateData as C {
+    cityid varchar [pk]
+    date varchar [pk]
+    tmax varchar
+    tmin varchar
+    prcp varchar
+    note: "Climate data from NOAA NCEI API."
+  }
+  Table economicCensusData as E {
+    cityid varchar  
+    year varchar
+    month varchar
+    CSTELEC varchar
+    CSTFUGT varchar 
+    CSTLAND varchar 
+    EMP varchar 
+    PAYANCW varchar
+    PAYANOC varchar
+  }
+Ref: CD.cityid < C.cityid
+Ref: CD.cityid < E.cityid

@@ -5,6 +5,13 @@ import os
 import numpy
 import pandas as pd
 import math
+import io
+import psycopg  # postgres adapter
+from sqlalchemy import create_engine  # shortcut tool to connect database to pandas
+from bs4 import BeautifulSoup
+import pymongo
+from bson.json_util import dumps, loads
+from plotly import express as px
 
 class ClimateAgent():
 
@@ -77,12 +84,10 @@ class ClimateAgent():
                   "dataTypes": "TMIN,TMAX,PRCP",
                   "startDate": "2022-01-01",
                   "endDate": "2022-02-01"}
-        
         r = requests.get(base, params=params, headers=headers)
         list_of_stations = json.loads(r.text)['results']
         name_of_station = list_of_stations[0]['stations'][0]['name']
         station_id = list_of_stations[0]['stations'][0]['id']
-
         return station_id
     
 
@@ -96,9 +101,33 @@ class ClimateAgent():
           "dataTypes": "TMIN,TMAX,PRCP", 
           "startDate": start_date,
           "endDate": end_date,
-          "stations": station_id}
+          "stations": station_id,
+          "units": "standard"}
         r = requests.get(base, params=params, headers=headers)
+        df = pd.read_csv(io.StringIO(r.text))
         return r.text
+    
+
+    def connect_to_postgres(self, password, user='postgres', host='localhost', port='5432', create=False):
+        dbserver = psycopg.connect(user=user, password=password, host=host, port=port)
+        dbserver.autocommit = True
+        if create:
+            # cursor is the location for writing code to run on the server
+            cursor = dbserver.cursor()
+            cursor.execute("DROP DATABASE IF EXISTS climate-data")
+            cursor.execute("CREATE DATABASE climate-data")
+        
+        engine = create_engine(f"postgresql+psycopg://{user}:{password}@{host}:{port}/contrans")
+        return dbserver, engine
+
+    def write_data_to_postgres(self):
+        pass
+
+    def read_data_from_postgres(self):
+        pass
+
+    def check_if_data_in_postgres(self):
+        pass
 
 
 
