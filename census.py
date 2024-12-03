@@ -39,6 +39,27 @@ class CensusData:
                                 "DP03_0040PE" : "pct_in_finance", "DP03_0041PE": "pct_in_science", "DP03_0042PE": "pct_in_education",
                                 "DP03_0043PE": "pct_in_arts", "DP03_0045PE": "pct_in_pub_ad"
                                 }
+        
+    def get_all_cities(self):
+        tmp_url = self.base_url + "2023/acs/acs1/profile"
+        params = {"key": os.getenv("CENSUS_KEY"),
+                  "get": "NAME",
+                  "for": "county:*",
+                  "in": "state:51"
+                  }
+        r = requests.get(tmp_url, params=params)
+        values = list(json.loads(r.text))
+        df = pd.DataFrame(values[1:], columns=values[0])
+        df = df.rename(columns={"NAME": "city"})
+        df['city'] = df['city'].str.replace("city", "")
+        df['city'] = df['city'].str.replace("County", "")
+        df['city'] = df['city'].str.lower()
+        df['city'] = df['city'].str.replace(" ", "")
+        df['city'] = df['city'].str.replace(",", "")
+        df['city'] = df['city'].str.replace("virginia", "")
+        return df
+
+
 
     def find_city_id(self, city:str):
         tmp_url = self.base_url + "2022/acs/acs1/profile"
@@ -63,8 +84,11 @@ class CensusData:
         
 
 
-    def get_data_for_city(self, city:str, years=list):
-        city_id = self.find_city_id(city)
+    def get_data_for_city(self, city:str, years=list, county=None):
+        if county is None:
+            city_id = self.find_city_id(city)
+        else:
+            city_id = county
        
         
         get_metrics = "".join(x + "," for x in self.list_of_metrics.keys())
@@ -87,20 +111,34 @@ class CensusData:
                 final_df = pd.concat([final_df, df], ignore_index=True)
             except:
                 print(r)
+
+        # rearranging some stuff for the final df
         last_col = final_df.columns[-1]
         final_df_last_col = final_df.drop(columns=[last_col])
         final_df_last_col.insert(1, last_col, final_df[last_col])
+        final_df_last_col['city'] = final_df_last_col['city'].str.replace("city", "")
+        final_df_last_col['city'] = final_df_last_col['city'].str.replace("County", "")
+        final_df_last_col['city'] = final_df_last_col['city'].str.lower()
+        final_df_last_col['city'] = final_df_last_col['city'].str.replace(" ", "")
+        final_df_last_col['city'] = final_df_last_col['city'].str.replace(",", "")
+        final_df_last_col['city'] = final_df_last_col['city'].str.replace("virginia", "")
         return final_df_last_col
     
 
-    def upload_city_to_postgres(self, city: pd.DataFrame, engine):
+    def upload_cities_to_postgres(self, city: pd.DataFrame, engine):
         print("Uploading region information to database")
         city.to_sql("cities", con=engine, index=False, chunksize=1000, if_exists="replace")
         print("Finished uploading to database")
 
     def upload_city_data_to_postgres(self, city_data, engine):
         print("Uploading city data to the database")
-        city_data.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="replace")
+        try:
+            existing_data = pd.read_sql('SELECT city, year FROM city_data', engine)
+            new_rows = city_data[~city_data[['city', 'year']].isin(existing_data[['city', 'year']])]
+            new_rows.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="replace")
+        except:
+            print("city_data table does not exist yet, creating now with first command")
+            city_data.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="replace")
         print("Finished uploading city data to database")
 
 
@@ -116,9 +154,14 @@ class CensusData:
         engine = create_engine(f"postgresql+psycopg://{user}:{password}@{host}:{port}/climate")
         return dbserver, engine
     
-    def query_city_data(city):
-        my_query = """"""
-        pass
+    def query_city_data(self, city:str, engine):
+        my_query = f"""
+        SELECT *
+        FROM city_data
+        WHERE city LIKE '{city}'
+        """
+        df = pd.read_sql_query(my_query, con=engine)
+        return df
 
     
 

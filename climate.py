@@ -120,7 +120,7 @@ class ClimateAgent():
         engine = create_engine(f"postgresql+psycopg://{user}:{password}@{host}:{port}/contrans")
         return dbserver, engine
 
-    def write_data_to_postgres(self):
+    def upload_data_to_postgres(self):
         pass
 
     def read_data_from_postgres(self):
