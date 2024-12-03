@@ -110,7 +110,10 @@ class CensusData:
                 df = df.rename(columns=self.list_of_metrics)
                 final_df = pd.concat([final_df, df], ignore_index=True)
             except:
-                print(r)
+                if "HTTP Status 404" in r:
+                    print("404 Error")
+                else:
+                    print(r)
 
         # rearranging some stuff for the final df
         last_col = final_df.columns[-1]
@@ -135,7 +138,7 @@ class CensusData:
         try:
             existing_data = pd.read_sql('SELECT city, year FROM city_data', engine)
             new_rows = city_data[~city_data[['city', 'year']].isin(existing_data[['city', 'year']])]
-            new_rows.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="replace")
+            new_rows.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="append")
         except:
             print("city_data table does not exist yet, creating now with first command")
             city_data.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="replace")
