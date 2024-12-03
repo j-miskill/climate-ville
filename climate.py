@@ -105,7 +105,7 @@ class ClimateAgent():
           "units": "standard"}
         r = requests.get(base, params=params, headers=headers)
         df = pd.read_csv(io.StringIO(r.text))
-        return r.text
+        return df
     
 
     def connect_to_postgres(self, password, user='postgres', host='localhost', port='5432', create=False):
