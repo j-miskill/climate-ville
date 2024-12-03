@@ -20,7 +20,7 @@ class CensusData:
         self.base_url = "https://api.census.gov/data/"
         # https://api.census.gov/data/{YEAR}/{DATASET}?get={VARIABLES}&for={GEO_TYPE}:{GEO_ID}&key={API_KEY}
         # let's try to get 10 metrics that would be worthwhile to explore!
-        self.list_of_metrics = {"NAME":"CITY","DP03_0093E":"male_worker_earnings","DP03_0094E":"female_worker_earnings",
+        self.list_of_metrics = {"NAME":"city","DP03_0093E":"male_worker_earnings","DP03_0094E":"female_worker_earnings",
                                 "DP03_0119PE":"pct_below_pov","DP04_0001E":"num_housing_units",
                                 "DP02_0002E":"num_married_housing_units","DP02_0016E":"avg_household_size",
                                 "DP03_0052E": "lt_10k_income","DP03_0053E": "gt_10k_lt_15k_income",
@@ -65,13 +65,14 @@ class CensusData:
 
     def get_data_for_city(self, city:str, years=list):
         city_id = self.find_city_id(city)
-        year = "2022"
+       
         
         get_metrics = "".join(x + "," for x in self.list_of_metrics.keys())
         get_metrics = get_metrics[:len(get_metrics)-1] # get rid of the last comma that I appended
 
         final_df = pd.DataFrame()
         for y in range(years[0], years[1]):
+    
             tmp_url = self.base_url + f"{y}/acs/acs1/profile"
             params = {"key": os.getenv("CENSUS_KEY"),
                     "get": get_metrics,
@@ -82,10 +83,14 @@ class CensusData:
                 r2 = list(json.loads(r))
                 df = pd.DataFrame(r2[1:], columns=r2[0])
                 df['year'] = y
+                df = df.rename(columns=self.list_of_metrics)
                 final_df = pd.concat([final_df, df], ignore_index=True)
             except:
                 print(r)
-        return final_df
+        last_col = final_df.columns[-1]
+        final_df_last_col = final_df.drop(columns=[last_col])
+        final_df_last_col.insert(1, last_col, final_df[last_col])
+        return final_df_last_col
     
 
     def upload_city_to_postgres(self, city: pd.DataFrame, engine):
@@ -110,6 +115,12 @@ class CensusData:
         
         engine = create_engine(f"postgresql+psycopg://{user}:{password}@{host}:{port}/climate")
         return dbserver, engine
+    
+    def query_city_data(city):
+        my_query = """"""
+        pass
+
+    
 
 
     
