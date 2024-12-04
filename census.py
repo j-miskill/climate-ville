@@ -98,7 +98,8 @@ class CensusData:
         for y in range(years[0], years[1]):
     
             tmp_url = self.base_url + f"{y}/acs/acs1/profile"
-            params = {"key": os.getenv("CENSUS_KEY"),
+            # "key": os.getenv("CENSUS_KEY")
+            params = {
                     "get": get_metrics,
                     "for": f"county:{city_id}",
                     "in": "state:51"}
@@ -137,7 +138,8 @@ class CensusData:
         print("Uploading city data to the database")
         try:
             existing_data = pd.read_sql('SELECT city, year FROM city_data', engine)
-            new_rows = city_data[~city_data[['city', 'year']].isin(existing_data[['city', 'year']])]
+            new_rows = city_data.merge(existing_data, on=['city', 'year'], how='left')
+            new_rows = new_rows[new_rows['_merge'] == 'left_only']
             new_rows.to_sql("city_data", con=engine, index=False, chunksize=1000, if_exists="append")
         except:
             print("city_data table does not exist yet, creating now with first command")

@@ -84,10 +84,14 @@ class ClimateAgent():
                   "dataTypes": "TMIN,TMAX,PRCP",
                   "startDate": "2022-01-01",
                   "endDate": "2022-02-01"}
-        r = requests.get(base, params=params, headers=headers)
-        list_of_stations = json.loads(r.text)['results']
-        name_of_station = list_of_stations[0]['stations'][0]['name']
-        station_id = list_of_stations[0]['stations'][0]['id']
+        try:
+            r = requests.get(base, params=params, headers=headers)
+            list_of_stations = json.loads(r.text)['results']
+            name_of_station = list_of_stations[0]['stations'][0]['name']
+            station_id = list_of_stations[0]['stations'][0]['id']
+        except Exception:
+            print("Station id look up failed for:", city)
+            print(r.text)
         return station_id
     
 
@@ -106,22 +110,22 @@ class ClimateAgent():
         r = requests.get(base, params=params, headers=headers)
         df = pd.read_csv(io.StringIO(r.text))
         return df
+
+    def upload_data_to_postgres(self, climate_data, engine):
+        print("Uploading city climate data to the database")
+        try:
+            existing_data = pd.read_sql('SELECT city, year FROM climate_data', engine)
+            new_rows = climate_data.merge(existing_data, on=['STATION', 'DATE'], how='left')
+            new_rows = new_rows[new_rows['_merge'] == 'left_only']
+            new_rows.to_sql("climate_data", con=engine, index=False, chunksize=1000, if_exists="append")
+        except:
+            print("city_data table does not exist yet, creating now with first command")
+            climate_data.to_sql("climate_data", con=engine, index=False, chunksize=1000, if_exists="replace")
+        print("Finished uploading city data to database")
+
     
-
-    def connect_to_postgres(self, password, user='postgres', host='localhost', port='5432', create=False):
-        dbserver = psycopg.connect(user=user, password=password, host=host, port=port)
-        dbserver.autocommit = True
-        if create:
-            # cursor is the location for writing code to run on the server
-            cursor = dbserver.cursor()
-            cursor.execute("DROP DATABASE IF EXISTS climate-data")
-            cursor.execute("CREATE DATABASE climate-data")
+    
         
-        engine = create_engine(f"postgresql+psycopg://{user}:{password}@{host}:{port}/contrans")
-        return dbserver, engine
-
-    def upload_data_to_postgres(self):
-        pass
 
     def read_data_from_postgres(self):
         pass
