@@ -8,6 +8,8 @@ from census import CensusData
 import pandas as pd
 import numpy as np
 import os
+import plotly.figure_factory as ff
+
 
 
 # create the dash app
@@ -57,10 +59,12 @@ html.Div([
            
             ]),
 
-        dcc.Tab(label="Socioeconomic Factors", children=[]),
+        dcc.Tab(label="Socioeconomic Factors", children=[
+            dcc.Graph(id="socioeconomic_table"),
+        ]),
 
         dcc.Tab(label="Analyzes", children=[
-            dcc.Graph(id="ideograph")
+            dcc.Graph(id="climate_trends")
         ]),
 ])
 ], style= {"width":"72%", "float": "right"})
@@ -72,13 +76,30 @@ html.Div([
 """
 @app.callback([Output(component_id="climate_table", component_property="figure")],
               [Input(component_id="dropdown", component_property="value")])
-
 def get_climate_table(b):
     station_id = ca.get_station_id_from_postgres(b, engine=engine)
     df = ca.get_climate_data_from_postgres(station_id, engine=engine)
-    return df
+    return [ff.create_table(df.head(20))]
 
+@app.callback([Output(component_id="socioeconomic_table", component_property="figure")],
+              [Input(component_id="dropdown", component_property="value")])
+def get_socioeconomic_table(b):
+    b = b.replace(", virginia", "")
+    df = cd.query_city_data(b, engine=engine)
+    figure = ff.create_table(df.head(20))
+    # Adjust layout to set a fixed height and add scrolling
+    figure.update_layout(xaxis=dict(rangeslider=dict(visible=True),
+                             type="linear"))
+    return [figure]
 
+@app.callback([Output(component_id="climate_trends", component_property="figure")],
+              [Input(component_id="dropdown", component_property="value")])
+def calculate_climate_trends(b):
+    # b = b.replace(", virginia", "")
+    # print(b)
+    station_id = ca.get_station_id_from_postgres(b, engine=engine)
+    fig = ca.plot_temperature_trend(station_id, engine=engine)
+    return [fig]
 
 # run the dash app
 if __name__ == "__main__":

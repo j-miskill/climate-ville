@@ -109,8 +109,13 @@ class ClimateAgent():
           "endDate": end_date,
           "stations": station_id,
           "units": "standard"}
-        r = requests.get(base, params=params, headers=headers)
-        df = pd.read_csv(io.StringIO(r.text))
+        try:
+            r = requests.get(base, params=params, headers=headers)
+            if "503" in r.text:
+                r = requests.get(base, params=params, headers=headers)
+            df = pd.read_csv(io.StringIO(r.text))
+        except:
+            print("")
         return df
 
     def upload_data_to_postgres(self, climate_data, engine):
@@ -143,7 +148,7 @@ class ClimateAgent():
         query = f"""
         SELECT * 
         FROM climate_data
-        WHERE STATION == '{station_id}'
+        WHERE id='{station_id}'
         """
         df = pd.read_sql_query(query, con=engine)
         return df
@@ -159,9 +164,15 @@ class ClimateAgent():
         # station_id = str(record)
         # print(station_id)
 
+    def plot_temperature_trend(self, station_id, engine):
+        query = f"""
+        SELECT *
+        FROM climate_data
+        WHERE id='{station_id}'
+        """
 
-
-
-        
-        
-    
+        df = pd.read_sql_query(query, con=engine)
+        df['date'] = pd.to_datetime(df['date'])
+        fig = px.scatter(df, x='date', y='tmax', trendline="ols", title=f'Temperature Change For {station_id}',
+                         template = 'plotly_dark', trendline_color_override='red')
+        return fig
