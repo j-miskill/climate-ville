@@ -23,10 +23,11 @@ server, engine = cd.connect_to_postgres(os.getenv("POSTGRES_PASSWORD"), host="po
 
 # create fixed variables for use in the dashboard
 
-
-
-cities = list(cd.get_all_cities())
-
+query = """
+SELECT *
+FROM city_ids
+"""
+cities = list(pd.read_sql_query(query, con=engine)['city'])
 dropdown_options = cities # choose a city to view information on it
 
 
@@ -37,7 +38,7 @@ app.layout = html.Div([
 html.H1("Understand How Changes in Climate Are Related to Socioeconomic Factors for Virginia", style={'text-align': 'center'}),
 html.Div([
     dcc.Markdown("Select your county of Virginia here"),
-    dcc.Dropdown(id='dropdown', options=dropdown_options, value='norfolk')
+    dcc.Dropdown(id='dropdown', options=dropdown_options, value='')
     ], style= {"width":"25%", "float": "left"}),
 html.Div([
     dcc.Tabs([

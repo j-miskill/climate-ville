@@ -86,6 +86,8 @@ class ClimateAgent():
                   "endDate": "2022-02-01"}
         try:
             r = requests.get(base, params=params, headers=headers)
+            if "503" in r.text:
+                r = requests.get(base, params=params, headers=headers)
             list_of_stations = json.loads(r.text)['results']
             name_of_station = list_of_stations[0]['stations'][0]['name']
             station_id = list_of_stations[0]['stations'][0]['id']
@@ -124,7 +126,17 @@ class ClimateAgent():
         print("Finished uploading city data to database")
 
     
-    
+    def upload_cities_and_ids(self, data, engine):
+        print("Uploading city ids data to the database")
+        try:
+            existing_data = pd.read_sql('SELECT city, id FROM city_ids', engine)
+            new_rows = data.merge(existing_data, on=['city', 'id'], how='left')
+            new_rows = new_rows[new_rows['_merge'] == 'left_only']
+            new_rows.to_sql("city_ids", con=engine, index=False, chunksize=1000, if_exists="append")
+        except:
+            print("city_ids table does not exist yet, creating now with first command")
+            data.to_sql("city_ids", con=engine, index=False, chunksize=1000, if_exists="replace")
+        print("Finished uploading city id data to database")
         
 
     def read_data_from_postgres(self):
