@@ -59,8 +59,6 @@ class CensusData:
         df['city'] = df['city'].str.replace("virginia", "")
         return df
 
-
-
     def find_city_id(self, city:str):
         tmp_url = self.base_url + "2022/acs/acs1/profile"
         params = {"key": os.getenv("CENSUS_KEY"),
