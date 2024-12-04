@@ -28,6 +28,10 @@ SELECT *
 FROM city_ids
 """
 cities = list(pd.read_sql_query(query, con=engine)['city'])
+cs = []
+for c in cities:
+    c = c.replace(", virginia", "")
+    cs.append(c)
 dropdown_options = cities # choose a city to view information on it
 
 
@@ -38,7 +42,7 @@ app.layout = html.Div([
 html.H1("Understand How Changes in Climate Are Related to Socioeconomic Factors for Virginia", style={'text-align': 'center'}),
 html.Div([
     dcc.Markdown("Select your county of Virginia here"),
-    dcc.Dropdown(id='dropdown', options=dropdown_options, value='')
+    dcc.Dropdown(id='dropdown', options=dropdown_options, value='norfolk, virginia')
     ], style= {"width":"25%", "float": "left"}),
 html.Div([
     dcc.Tabs([
@@ -46,6 +50,7 @@ html.Div([
         dcc.Tab(label="Climate", children=[
             
             # 
+            dcc.Graph(id="climate_table"),
             
 
             # 
@@ -65,8 +70,13 @@ html.Div([
 """
     callback methods
 """
+@app.callback([Output(component_id="climate_table", component_property="figure")],
+              [Input(component_id="dropdown", component_property="value")])
 
-
+def get_climate_table(b):
+    station_id = ca.get_station_id_from_postgres(b, engine=engine)
+    df = ca.get_climate_data_from_postgres(station_id, engine=engine)
+    return df
 
 
 

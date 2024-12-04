@@ -139,11 +139,25 @@ class ClimateAgent():
         print("Finished uploading city id data to database")
         
 
-    def read_data_from_postgres(self):
-        pass
+    def get_climate_data_from_postgres(self, station_id, engine):
+        query = f"""
+        SELECT * 
+        FROM climate_data
+        WHERE STATION == '{station_id}'
+        """
+        df = pd.read_sql_query(query, con=engine)
+        return df
 
-    def check_if_data_in_postgres(self):
-        pass
+    def get_station_id_from_postgres(self, city, engine):
+        query = f"""
+        SELECT *
+        FROM city_ids
+        WHERE city like '{city}'
+        """
+        record = pd.read_sql_query(query, con=engine)
+        return record['id'].item()
+        # station_id = str(record)
+        # print(station_id)
 
 
 
