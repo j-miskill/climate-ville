@@ -81,7 +81,7 @@ class ClimateAgent():
         bounding_box = f"{bb[0]},{bb[1]},{bb[2]},{bb[3]}"
         params = {"dataset":"global-summary-of-the-month",
                   "bbox": bounding_box,
-                  "dataTypes": "TMIN,TMAX,PRCP",
+                  "dataTypes": "TMIN,TMAX,PRCP,RHAV,TSUN",
                   "startDate": "2022-01-01",
                   "endDate": "2022-02-01"}
         try:
@@ -104,7 +104,7 @@ class ClimateAgent():
         base = "https://www.ncei.noaa.gov/access/services/data/v1"
         headers = self.make_headers()
         params = {"dataset":"daily-summaries",
-          "dataTypes": "TMIN,TMAX,PRCP", 
+          "dataTypes": "TMIN,TMAX,PRCP,RHAV,TSUN",
           "startDate": start_date,
           "endDate": end_date,
           "stations": station_id,
@@ -126,7 +126,7 @@ class ClimateAgent():
             new_rows = new_rows[new_rows['_merge'] == 'left_only']
             new_rows.to_sql("climate_data", con=engine, index=False, chunksize=1000, if_exists="append")
         except:
-            print("city_data table does not exist yet, creating now with first command")
+            print("climate_data table does not exist yet, creating now with first command")
             climate_data.to_sql("climate_data", con=engine, index=False, chunksize=1000, if_exists="replace")
         print("Finished uploading city data to database")
 

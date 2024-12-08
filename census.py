@@ -126,7 +126,6 @@ class CensusData:
         final_df_last_col['city'] = final_df_last_col['city'].str.replace("virginia", "")
         return final_df_last_col
     
-
     def upload_cities_to_postgres(self, city: pd.DataFrame, engine):
         print("Uploading region information to database")
         city.to_sql("cities", con=engine, index=False, chunksize=1000, if_exists="replace")

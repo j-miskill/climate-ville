@@ -5,30 +5,72 @@ Project contrans {
   '''
 }
 
-Table cityData as CD {
-    cityid varchar [pk]
-    lat varchar
-    long varchar
-    bounding_box varchar
+Table city_ids as CI {
+  city varchar [pk]
+  id varchar [pk]
+  note: "all cities that we have data on for this census<->noaa mapping project"
+}
+
+Table city_data as CD {
+    city varchar [pk]
+    year varchar [pk]
+    male_worker_earnings varchar
+    female_worker_earnings varchar
+    pct_below_pov varchar
+    num_housing_units varchar
+    num_married_housing_units varchar
+    avg_household_size varchar
+    lt_10k_income varchar
+    gt_10k_lt_15k_income varchar
+    gt_15k_lt_25k_income varchar
+    gt_25k_lt_35k_income varchar
+    gt_35k_lt_45k_income varchar
+    gt_50k_lt_75k_income varchar
+    gt_75k_lt_100k_income varchar
+    gt_100k_lt_150k_income varchar
+    gt_150k_lt_200k_income varchar
+    gt_200k_income varchar
+    men_not_married varchar
+    married_but_separated varchar
+    divorced varchar
+    est_in_preschool varchar
+    est_in_kindergarten varchar
+    est_in_1_8 varchar
+    est_in_9_12 varchar
+    est_in_college varchar
+    pct_lt_ninth_grade varchar
+    pct_some_high_school varchar
+    pct_high_school varchar
+    pct_some_college varchar
+    pct_associates varchar
+    pct_bachelors varchar
+    pct_graduate varchar
+    unemployment_rate varchar
+    pct_in_ag_ind varchar
+    pct_in_construction varchar
+    pct_in_manufacturing varchar
+    pct_in_wholesale_trade varchar
+    pct_in_retail varchar
+    pct_in_transportation varchar
+    pct_in_information varchar
+    pct_in_finance varchar
+    pct_in_science varchar
+    pct_in_education varchar
+    pct_in_arts varchar
+    pct_in_pub_ad varchar
+    state varchar
+    county varchar
+    note: "census data from the US Census API"
   }
-Table climateData as C {
-    cityid varchar [pk]
+Table climate_data as C {
+    id varchar [pk]
     date varchar [pk]
     tmax varchar
     tmin varchar
     prcp varchar
+    rhav varchar
+    tsun varchar
     note: "Climate data from NOAA NCEI API."
   }
-  Table economicCensusData as E {
-    cityid varchar  
-    year varchar
-    month varchar
-    CSTELEC varchar
-    CSTFUGT varchar 
-    CSTLAND varchar 
-    EMP varchar 
-    PAYANCW varchar
-    PAYANOC varchar
-  }
-Ref: CD.cityid < C.cityid
-Ref: CD.cityid < E.cityid
+Ref: CI.id < C.id
+Ref: CI.city < CD.city
