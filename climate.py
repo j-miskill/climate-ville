@@ -151,6 +151,7 @@ class ClimateAgent():
         WHERE id='{station_id}'
         """
         df = pd.read_sql_query(query, con=engine)
+        
         return df
 
     def get_station_id_from_postgres(self, city, engine):

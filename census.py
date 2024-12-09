@@ -158,7 +158,7 @@ class CensusData:
     
     def query_city_data(self, city:str, engine):
         my_query = f"""
-        SELECT *
+        SELECT city, year, pct_below_pov, unemployment_rate
         FROM city_data
         WHERE city LIKE '{city}'
         """
