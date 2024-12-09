@@ -63,7 +63,8 @@ class ClimateAgent():
         return useragent
 
     def make_headers(self, email='jcm4bsq@virginia.edu'):
-        useragent = self.get_useragent()
+        # useragent = self.get_useragent()
+        useragent = "python3"
         headers = {
             'User-Agent': useragent,
             'From': email,
@@ -117,8 +118,8 @@ class ClimateAgent():
             if "503" in r.text:
                 r = requests.get(base, params=params, headers=headers)
             df = pd.read_csv(io.StringIO(r.text))
-        except:
-            print("")
+        except Exception as e:
+            print(e)
         return df
 
     def upload_data_to_postgres(self, climate_data, engine):

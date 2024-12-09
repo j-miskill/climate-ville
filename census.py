@@ -92,7 +92,7 @@ class CensusData:
         get_metrics = get_metrics[:len(get_metrics)-1] # get rid of the last comma that I appended
 
         final_df = pd.DataFrame()
-        
+        print('starting scraping for:', city_id)
         for y in range(years[0], years[1]):
             
     
@@ -104,18 +104,20 @@ class CensusData:
                     "in": "state:51",
                      "key": os.getenv("CENSUS_KEY")}
             try:
-                r = requests.get(tmp_url, params=params).text
-                r2 = list(json.loads(r))
+                r = requests.get(tmp_url, params=params)
+                r2 = list(json.loads(r.text))
                 df = pd.DataFrame(r2[1:], columns=r2[0])
                 df['year'] = y
                 df = df.rename(columns=self.list_of_metrics)
                 final_df = pd.concat([final_df, df], ignore_index=True)
             except:
                 if "HTTP Status 404" in r:
-                    print(r)
+                    # print(r.url)
                     print("404 Error")
                 else:
                     print('r', r)
+        
+        print('finished scraping for:', city_id)
 
         # rearranging some stuff for the final df
         last_col = final_df.columns[-1]
