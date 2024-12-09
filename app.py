@@ -35,10 +35,13 @@ cities = list(pd.read_sql_query(query, con=engine)['city'])
 cs = []
 for c in cities:
     if c == 'Virginia Beach':
-         c = "beach"
+        c = "beach"
     c = c.replace(", virginia", "")
     cs.append(c)
 dropdown_options = cities # choose a city to view information on it
+
+
+
 
 feature_query = """
 SELECT * 
