@@ -165,7 +165,7 @@ class ClimateAgent():
         WHERE city like '{city}'
         """
         record = pd.read_sql_query(query, con=engine)
-        return record['id'].item()
+        return record['id'].values[0]
         # station_id = str(record)
         # print(station_id)
 

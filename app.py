@@ -22,7 +22,7 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # set up contrans and postgres connections
 ca = ClimateAgent()
 cd = CensusData()
-server, engine = cd.connect_to_postgres(os.getenv("POSTGRES_PASSWORD"), host="postgres") # networking docker containers
+server, engine = cd.connect_to_postgres(os.getenv("POSTGRES_PASSWORD")) # networking docker containers
 
 
 # create fixed variables for use in the dashboard
@@ -58,8 +58,8 @@ app.layout = html.Div([
 html.H1("Understand How Changes in Climate Are Related to Socioeconomic Factors for Virginia", style={'text-align': 'center'}),
 html.Div([
     dcc.Markdown("Select two Virginia cities to compare"),
-    dcc.Dropdown(id='state1', options=dropdown_options, value='norfolk, virginia'),
-    dcc.Dropdown(id='state2', options=dropdown_options, value='augusta, virginia'),
+    dcc.Dropdown(id='state1', options=dropdown_options, value='norfolk'),
+    dcc.Dropdown(id='state2', options=dropdown_options, value='augusta'),
     ], style= {"width":"15%", "float": "left"}),
 html.Div([
     dcc.Tabs([
@@ -156,6 +156,8 @@ def get_climate_table(state2):
             ])
 def get_socioeconomic_table(b):
     b = b.replace(", virginia", "")
+    if b == 'charlottesville':
+        b = 'albemarle'
     df = cd.query_city_data(b, engine=engine)
     figure = ff.create_table(df.tail(20))
     # Adjust layout to set a fixed height and add scrolling
@@ -169,6 +171,8 @@ def get_socioeconomic_table(b):
             ])
 def get_socioeconomic_table(b):
     b = b.replace(", virginia", "")
+    if b == 'charlottesville':
+        b = 'albemarle'
     df = cd.query_city_data(b, engine=engine)
     figure = ff.create_table(df.tail(20))
     # Adjust layout to set a fixed height and add scrolling
@@ -180,6 +184,8 @@ def get_socioeconomic_table(b):
               [Input(component_id="state1", component_property="value"),])
 def get_education_table(b):
     b = b.replace(", virginia", "")
+    if b == 'charlottesville':
+        b = 'albemarle'
     query = f"""
             SELECT city, year, pct_lt_ninth_grade, pct_some_high_school,
                     pct_high_school, pct_some_college, pct_associates, pct_bachelors, pct_graduate
@@ -196,6 +202,8 @@ def get_education_table(b):
               [Input(component_id="state2", component_property="value"),])
 def get_education_table(b):
     b = b.replace(", virginia", "")
+    if b == 'charlottesville':
+        b = 'albemarle'
     query = f"""
             SELECT city, year, pct_lt_ninth_grade, pct_some_high_school,
                     pct_high_school, pct_some_college, pct_associates, pct_bachelors, pct_graduate
@@ -213,6 +221,8 @@ def get_education_table(b):
               [Input(component_id="state1", component_property="value"),])
 def get_education_table(b):
     b = b.replace(", virginia", "")
+    if b == 'charlottesville':
+        b = 'albemarle'
     query = f"""
             SELECT city, year, gt_10k_lt_15k_income, gt_15k_lt_25k_income, gt_25k_lt_35k_income, gt_35k_lt_45k_income, gt_50k_lt_75k_income, 
             gt_75k_lt_100k_income, gt_100k_lt_150k_income, gt_150k_lt_200k_income, gt_200k_income
@@ -230,6 +240,8 @@ def get_education_table(b):
               [Input(component_id="state2", component_property="value"),])
 def get_education_table(b):
     b = b.replace(", virginia", "")
+    if b == 'charlottesville':
+        b = 'albemarle'
     query = f"""
             SELECT city, year, gt_10k_lt_15k_income, gt_15k_lt_25k_income, gt_25k_lt_35k_income, gt_35k_lt_45k_income, gt_50k_lt_75k_income, 
             gt_75k_lt_100k_income, gt_100k_lt_150k_income, gt_150k_lt_200k_income, gt_200k_income

@@ -24,7 +24,11 @@ This will download all the required packages needed for this project.
 docker compose up
 ```
 
-This will pull the image that was created for this project and allow you to interact with the database. The first time that you launch docker, it will likely take a while for the dashboard to load up. Give it a few minutes. It is because it's making calls to the other APIs.
+This will pull the image that was created for this project and allow you to interact with the database. The first time that you launch docker, it will likely take a few seconds for the dashboard to load up. The reason is that it is loading in the tables if it is your first time opening the dashboard.
 
-4. Interact with the database.
+4. Run the app. 
+
+```
+python3 app.py
+```
 
