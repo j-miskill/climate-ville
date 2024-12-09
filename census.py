@@ -86,21 +86,23 @@ class CensusData:
         if county is None:
             city_id = self.find_city_id(city)
         else:
-            city_id = county
-       
+            city_id = county       
         
         get_metrics = "".join(x + "," for x in self.list_of_metrics.keys())
         get_metrics = get_metrics[:len(get_metrics)-1] # get rid of the last comma that I appended
 
         final_df = pd.DataFrame()
+        
         for y in range(years[0], years[1]):
+            
     
             tmp_url = self.base_url + f"{y}/acs/acs1/profile"
-            # "key": os.getenv("CENSUS_KEY")
+           
             params = {
                     "get": get_metrics,
                     "for": f"county:{city_id}",
-                    "in": "state:51"}
+                    "in": "state:51",
+                     "key": os.getenv("CENSUS_KEY")}
             try:
                 r = requests.get(tmp_url, params=params).text
                 r2 = list(json.loads(r))
@@ -110,9 +112,10 @@ class CensusData:
                 final_df = pd.concat([final_df, df], ignore_index=True)
             except:
                 if "HTTP Status 404" in r:
+                    print(r)
                     print("404 Error")
                 else:
-                    print(r)
+                    print('r', r)
 
         # rearranging some stuff for the final df
         last_col = final_df.columns[-1]

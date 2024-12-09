@@ -47,10 +47,10 @@ class ClimateAgent():
         latitude_offset = buffer / mile_offset # ChatGPT
         longitude_offset = buffer / (mile_offset * math.cos(math.radians(latitude))) # ChatGPT calc
         
-        north = round((latitude + latitude_offset), 3)
-        south = round((latitude - latitude_offset), 3)
-        east = round((longitude + longitude_offset), 3)
-        west = round((longitude - longitude_offset), 3)
+        north = round((latitude + latitude_offset), 6)
+        south = round((latitude - latitude_offset), 6)
+        east = round((longitude + longitude_offset), 6)
+        west = round((longitude - longitude_offset), 6)
 
         bounding_box = (north, west, south, east)
         return bounding_box
@@ -66,7 +66,8 @@ class ClimateAgent():
         useragent = self.get_useragent()
         headers = {
             'User-Agent': useragent,
-            'From': email
+            'From': email,
+            "key": os.getenv("NCDC_TOKEN")
         }
         return headers
     
@@ -74,6 +75,7 @@ class ClimateAgent():
         """
             Let's figure out how to grab a station ID from this dataset
         """
+        #      https://www.ncei.noaa.gov/access/services/search/v1/data
         base = "https://www.ncei.noaa.gov/access/services/search/v1/data"
         lat, long = self.get_lat_long(city)
         bb = self.get_bounding_box(lat, long, buffer=10)

@@ -16,4 +16,4 @@ RUN pip install -r requirements.txt
 EXPOSE 8050
 
 # run the dashboard when we launch the container 
-CMD ["python3", "create_tables.py", "&&", "python3", "app.py"]
+# CMD ["python3", "create_tables.py"]
