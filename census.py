@@ -126,9 +126,9 @@ class CensusData:
         final_df_last_col['city'] = final_df_last_col['city'].str.replace("virginia", "")
         return final_df_last_col
     
-    def upload_cities_to_postgres(self, city: pd.DataFrame, engine):
+    def upload_cities_to_postgres(self, df, engine):
         print("Uploading region information to database")
-        city.to_sql("city_ids", con=engine, index=False, chunksize=1000, if_exists="replace")
+        df.to_sql("city_ids", con=engine, index=False, chunksize=1000, if_exists="append")
         print("Finished uploading to database")
 
     def upload_city_data_to_postgres(self, city_data, engine):

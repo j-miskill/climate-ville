@@ -19,6 +19,7 @@ if __name__ == "__main__":
     server, engine = cd.connect_to_postgres(os.getenv("POSTGRES_PASSWORD"), host="postgres")
 
     try:
+        # see if there is a city_ids table
         query = """
         SELECT * 
         FROM city_ids
@@ -30,7 +31,8 @@ if __name__ == "__main__":
         cities = list(cd.get_all_cities()['city'])
         print(cities)
 
-        cities_and_ids = pd.DataFrame(columns=["city", "id"])
+        cities_and_ids = {"city": [],
+                  "id": []}
         print("Getting all city names and ids")
         for c in cities:
             try:
@@ -48,20 +50,22 @@ if __name__ == "__main__":
 
                 if c == "beach":
                     c = "Virginia Beach"
-                print(c)
+                c = c + ", virginia"
                 id = ca.get_station_id(c)
-                df = pd.DataFrame({c:id}, columns=['city', 'id'])
-                cities_and_ids = pd.concat([cities_and_ids, df], ignore_index=True)
+                cities_and_ids['city'].append(c)
+                cities_and_ids['id'].append(id)
 
             except:
                 continue
+        final_df = pd.DataFrame.from_dict(cities_and_ids)
         cd.upload_cities_to_postgres(cities_and_ids, engine=engine)
 
         print("Getting all city data")
+        counties = list(cities_and_ids['id'])
         city_df = pd.DataFrame()
         for c in cities:
             try:
-                df = cd.get_data_for_city(c, years=["2009", "2022"])
+                df = cd.get_data_for_city(c, years=["2009", "2023"])
                 city_df = pd.concat([city_df, df], ignore_index=True)
             except:
                 continue
