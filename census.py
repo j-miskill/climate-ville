@@ -128,7 +128,7 @@ class CensusData:
     
     def upload_cities_to_postgres(self, city: pd.DataFrame, engine):
         print("Uploading region information to database")
-        city.to_sql("cities", con=engine, index=False, chunksize=1000, if_exists="replace")
+        city.to_sql("city_ids", con=engine, index=False, chunksize=1000, if_exists="replace")
         print("Finished uploading to database")
 
     def upload_city_data_to_postgres(self, city_data, engine):

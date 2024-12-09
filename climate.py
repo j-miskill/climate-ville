@@ -81,7 +81,7 @@ class ClimateAgent():
         bounding_box = f"{bb[0]},{bb[1]},{bb[2]},{bb[3]}"
         params = {"dataset":"global-summary-of-the-month",
                   "bbox": bounding_box,
-                  "dataTypes": "TMIN,TMAX,PRCP,RHAV,TSUN",
+                  "dataTypes": "TMIN,TMAX,PRCP",
                   "startDate": "2022-01-01",
                   "endDate": "2022-02-01"}
         try:
@@ -91,9 +91,10 @@ class ClimateAgent():
             list_of_stations = json.loads(r.text)['results']
             name_of_station = list_of_stations[0]['stations'][0]['name']
             station_id = list_of_stations[0]['stations'][0]['id']
-        except Exception:
+        except Exception as e:
             print("Station id look up failed for:", city)
             print(r.text)
+            print(e)
         return station_id
     
 
@@ -151,7 +152,7 @@ class ClimateAgent():
         WHERE id='{station_id}'
         """
         df = pd.read_sql_query(query, con=engine)
-        
+
         return df
 
     def get_station_id_from_postgres(self, city, engine):

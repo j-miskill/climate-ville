@@ -16,7 +16,7 @@ if __name__ == "__main__":
     ca = climate.ClimateAgent()
     cd = census.CensusData()
     pw = os.getenv("POSTGRES_PASSWORD")
-    server, engine = cd.connect_to_postgres(password=pw)
+    server, engine = cd.connect_to_postgres(os.getenv("POSTGRES_PASSWORD"), host="postgres")
 
     try:
         query = """
@@ -42,6 +42,9 @@ if __name__ == "__main__":
                     c = "manassas"
                 if c == "spotsylvania":
                     c = "fredericksburg"
+                if c == "albemarle":
+                    c = "charlottesville"
+
 
                 if c == "beach":
                     c = "Virginia Beach"
@@ -52,13 +55,13 @@ if __name__ == "__main__":
 
             except:
                 continue
-        cd.upload_cities_to_postgres(cities_and_ids)
+        cd.upload_cities_to_postgres(cities_and_ids, engine=engine)
 
         print("Getting all city data")
         city_df = pd.DataFrame()
         for c in cities:
             try:
-                df = cd.get_data_for_city(c)
+                df = cd.get_data_for_city(c, years=["2009", "2022"])
                 city_df = pd.concat([city_df, df], ignore_index=True)
             except:
                 continue
@@ -77,7 +80,8 @@ if __name__ == "__main__":
                     c = "manassas"
                 if c == "spotsylvania":
                     c = "fredericksburg"
-
+                if c == "albemarle":
+                    c = "charlottesville"
                 if c == "beach":
                     c = "Virginia Beach"
                 c = c + ", virginia"
@@ -89,6 +93,8 @@ if __name__ == "__main__":
                 continue
 
         ca.upload_data_to_postgres(full_df, engine=engine)
+
+        print("FINISHED UPLOADING EVERYTHING")
 
     
 
