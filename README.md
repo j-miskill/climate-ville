@@ -16,6 +16,7 @@ pip install -r requirements.txt
 
 This will download all the required packages needed for this project.
 
+**also, set up a `.env` file with all variables you need.
 2. Launch Docker
 
 3. Run the Docker compose command:
