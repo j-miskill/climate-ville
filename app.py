@@ -11,6 +11,8 @@ import os
 import plotly.figure_factory as ff
 from plotly import express as px
 import plotly.graph_objects as go
+from dotenv import load_dotenv
+load_dotenv()
 
 
 
@@ -22,7 +24,9 @@ app = dash.Dash(__name__, external_stylesheets=external_stylesheets)
 # set up contrans and postgres connections
 ca = ClimateAgent()
 cd = CensusData()
-server, engine = cd.connect_to_postgres(os.getenv("POSTGRES_PASSWORD")) # networking docker containers
+pw = os.getenv("POSTGRES_PASSWORD")
+print(pw)
+server, engine = cd.connect_to_postgres(password=pw) # networking docker containers
 
 
 # create fixed variables for use in the dashboard
